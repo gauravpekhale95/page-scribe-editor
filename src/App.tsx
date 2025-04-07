@@ -5,9 +5,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useStore } from "./store/useStore";
+import { useOktaAuth } from '@okta/okta-react';
 
 // Pages
 import LoginPage from "./pages/LoginPage";
+import OktaRedirectPage from "./pages/OktaRedirectPage";
 import StatesListPage from "./pages/StatesListPage";
 import DocumentListPage from "./pages/DocumentListPage";
 import VersionListPage from "./pages/VersionListPage";
@@ -20,8 +22,9 @@ const queryClient = new QueryClient();
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const { user } = useStore();
+  const { authState } = useOktaAuth();
   
-  if (!user) {
+  if (!authState?.isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
   
@@ -47,6 +50,7 @@ const App = () => (
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/redirect" element={<OktaRedirectPage />} />
           
           {/* Protected Routes */}
           <Route path="/" element={

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/store/useStore';
 import { toast } from 'sonner';
+import { useOktaAuth } from '@okta/okta-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,27 +15,32 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { oktaAuth, authState } = useOktaAuth();
+
+  useEffect(() => {
+    if (authState?.isAuthenticated) {
+      navigate('/');
+    }
+  }, [authState, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // In a real app, this would be an API call to authenticate
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // For demo purposes, we'll just set mock user data
-      loadMockData();
-      
-      // Navigate to the states page
-      toast.success('Successfully logged in!');
-      navigate('/');
+      // Authenticate using Okta
+      await oktaAuth.signInWithCredentials({ username: email, password });
+      // The rest will be handled by the redirect callback
     } catch (error) {
       toast.error('Failed to login. Please check your credentials.');
       console.error('Login error:', error);
-    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOktaLogin = () => {
+    setIsLoading(true);
+    oktaAuth.signInWithRedirect();
   };
 
   const handleDemoLogin = (role: 'cca' | 'dev' | 'admin') => {
@@ -53,7 +59,7 @@ const LoginPage: React.FC = () => {
       };
       
       setUser(user);
-      toast.success(`Logged in as ${role.toUpperCase()}!`);
+      toast.success(`Logged in as ${role.toUpperCase()}! (Demo Mode)`);
       navigate('/');
       setIsLoading(false);
     }, 800);
@@ -98,9 +104,21 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Signing in...' : 'Sign in with credentials'}
             </Button>
           </form>
+          
+          <div className="mt-4">
+            <Button 
+              type="button" 
+              className="w-full" 
+              variant="outline" 
+              onClick={handleOktaLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing in...' : 'Sign in with Okta SSO'}
+            </Button>
+          </div>
           
           <div className="mt-6">
             <div className="relative">
@@ -142,7 +160,7 @@ const LoginPage: React.FC = () => {
         </CardContent>
         <CardFooter className="flex flex-col">
           <p className="text-center text-sm text-gray-500 mt-2">
-            For demonstration purposes only. This is a mock login page.
+            For demonstration purposes only. Use demo buttons for quick access.
           </p>
         </CardFooter>
       </Card>
