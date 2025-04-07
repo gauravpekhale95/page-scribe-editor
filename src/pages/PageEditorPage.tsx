@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
-import { Check, X, ZoomIn, ZoomOut, Save, ArrowLeft } from 'lucide-react';
+import { Check, X, ZoomIn, ZoomOut, Save, ArrowLeft, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import Editor from '@monaco-editor/react';
