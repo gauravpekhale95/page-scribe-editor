@@ -1,130 +1,37 @@
-const ACCESS_TOKEN_KEY = "access_token";
-const TYPE_KEY = "type";
-const USER_KEY = "user";
-const AGENTID_KEY = "agentID";
-const FILEGUID_KEY = "fileGuid";
+// src/utils/localStorageHelper.ts
+export class LocalStorageHelper {
+  private static readonly ACCESS_TOKEN_KEY = 'okta_access_token';
+  private static readonly USER_ROLE_KEY = 'user_role';
 
-export const LocalStorageHelper = {
-  /** Save access token to local storage */
-  setAccessToken: (token: string): void => {
-    try {
-      localStorage.setItem(ACCESS_TOKEN_KEY, token);
-    } catch (error) {
-      console.error("Error saving access token:", error);
-    }
-  },
+  static setAccessToken(token: string): void {
+    localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+  }
 
-  /** Retrieve access token from local storage */
-  getAccessToken: (): string => {
-    try {
-      return localStorage.getItem(ACCESS_TOKEN_KEY) || "";
-    } catch (error) {
-      console.error("Error retrieving access token:", error);
-      return "";
-    }
-  },
+  static getAccessToken(): string | null {
+    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+  }
 
-  /** Clear access token from local storage */
-  clearAccessToken: (): void => {
-    try {
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-    } catch (error) {
-      console.error("Error clearing access token:", error);
-    }
-  },
+  static clearAccessToken(): void {
+    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+  }
 
-  /** Save type to local storage */
-  setRequestType: (type: string): void => {
-    try {
-      localStorage.setItem(TYPE_KEY, type);
-    } catch (error) {
-      console.error("Error saving type:", error);
-    }
-  },
+  static setUserRole(role: string): void {
+    localStorage.setItem(this.USER_ROLE_KEY, role);
+  }
 
-  /** Retrieve type from local storage */
-  getRequestType: (): string => {
-    try {
-      return localStorage.getItem(TYPE_KEY) || "";
-    } catch (error) {
-      console.error("Error retrieving type:", error);
-      return "";
-    }
-  },
+  static getUserRole(): string | null {
+    return localStorage.getItem(this.USER_ROLE_KEY);
+  }
 
-  /** Clear type from local storage */
-  clearRequestType: (): void => {
-    try {
-      localStorage.removeItem(TYPE_KEY);
-    } catch (error) {
-      console.error("Error clearing type:", error);
-    }
-  },
+  static clearUserRole(): void {
+    localStorage.removeItem(this.USER_ROLE_KEY);
+  }
 
-  /** Save name to local storage */
-  setUserName: (name: string): void => {
-    try {
-      localStorage.setItem(USER_KEY, name);
-    } catch (error) {
-      console.error("Error saving name:", error);
-    }
-  },
-
-  /** Retrieve name from local storage */
-  getUserName: (): string => {
-    try {
-      return localStorage.getItem(USER_KEY) || "";
-    } catch (error) {
-      console.error("Error retrieving name:", error);
-      return "";
-    }
-  },
-
-  /** Clear name from local storage */
-  clearUserName: (): void => {
-    try {
-      localStorage.removeItem(USER_KEY);
-    } catch (error) {
-      console.error("Error clearing name:", error);
-    }
-  },
-
-  /** Save agentId and fileguid to local storage */
-  setTCParams: (agentId: string, fileGuid: string): void => {
-    try {
-      localStorage.setItem(AGENTID_KEY, agentId);
-      localStorage.setItem(FILEGUID_KEY, fileGuid);
-    } catch (error) {
-      console.error("Error saving tcParams:", error);
-    }
-  },
-
-  /** Retrieve name from local storage */
-  getAgentId: (): string => {
-    try {
-      return localStorage.getItem(AGENTID_KEY) || "";
-    } catch (error) {
-      console.error("Error retrieving AGENTID_KEY:", error);
-      return "";
-    }
-  },
-
-  getFileGuid: (): string => {
-    try {
-      return localStorage.getItem(FILEGUID_KEY) || "";
-    } catch (error) {
-      console.error("Error retrieving FILEGUID_KEY:", error);
-      return "";
-    }
-  },
-
-  /** Clear name from local storage */
-  clearTCParams: (): void => {
-    try {
-      localStorage.removeItem(AGENTID_KEY);
-      localStorage.removeItem(FILEGUID_KEY);
-    } catch (error) {
-      console.error("Error clearing tcParams:", error);
-    }
-  },
-};
+  static clearAll(): void {
+    localStorage.clear();
+    this.clearAccessToken();
+    this.clearUserRole();
+    
+     
+  }
+}

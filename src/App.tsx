@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +8,6 @@ import { useOktaAuth } from '@okta/okta-react';
 
 // Pages
 import LoginPage from "./pages/LoginPage";
-import OktaRedirectPage from "./pages/OktaRedirectPage";
 import StatesListPage from "./pages/StatesListPage";
 import DocumentListPage from "./pages/DocumentListPage";
 import VersionListPage from "./pages/VersionListPage";
@@ -23,21 +21,21 @@ const queryClient = new QueryClient();
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const { user } = useStore();
   const { authState } = useOktaAuth();
-  
+   
   if (!authState?.isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
-  
+   
   return <>{children}</>;
 };
 
 const AdminGuard = ({ children }: { children: React.ReactNode }) => {
   const { user } = useStore();
-  
+   
   if (!user || user.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
-  
+   
   return <>{children}</>;
 };
 
@@ -50,7 +48,7 @@ const App = () => (
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/redirect" element={<OktaRedirectPage />} />
+          <Route path="/login/callback" element={<LoginPage />} />
           
           {/* Protected Routes */}
           <Route path="/" element={
@@ -85,9 +83,12 @@ const App = () => (
           
           {/* Admin Routes */}
           <Route path="/admin" element={
-            <AdminGuard>
+            <AuthGuard>
+              <AdminGuard>
               <AdminPage />
             </AdminGuard>
+            </AuthGuard>
+            
           } />
           
           {/* 404 Route */}

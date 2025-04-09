@@ -1,13 +1,12 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type Role = 'admin' | 'dev' | 'cca';
 export type DocumentStatus = 'new' | 'in-progress' | 'review' | 'complete' | 'ai-process';
 
 export interface User {
+  id: string;
   email: string;
-  role: Role;
+  role: string;
   states: string[];
   name: string;
 }
@@ -72,53 +71,63 @@ interface AppState {
   setCurrentPage: (pageId: string | null) => void;
   setIsLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
-  
-  // Mock data helpers (for development)
-  loadMockData: () => void;
+
+  // Data loader
+  loadMockData: () => Promise<void>;
 }
 
-// Mock data for development
-const mockStates = ['California', 'Texas', 'New York', 'Florida', 'Illinois'];
+// Dummy API functions returning mock data (simulate future API calls)
 
-const createMockDocuments = () => {
+const fetchUser = async (): Promise<User> => ({
+  id: 'user-1',
+  email: 'user@example.com',
+  role: 'cca',
+  states: ['California', 'Texas', 'New York', 'Florida', 'Illinois'],
+  name: 'John Doe'
+});
+
+const fetchStates = async (): Promise<string[]> => ['California', 'Texas', 'New York', 'Florida', 'Illinois'];
+
+const fetchDocuments = async (): Promise<Document[]> => {
+  const states = await fetchStates();
   const statuses: DocumentStatus[] = ['new', 'in-progress', 'review', 'complete', 'ai-process'];
-  
-  return mockStates.flatMap(state => 
+
+  return states.flatMap(state =>
     Array(3).fill(0).map((_, i) => ({
       id: `doc-${state}-${i}`,
       name: `${state} Form ${i + 1}`,
       state,
       versionsCount: Math.floor(Math.random() * 5) + 1,
-      lastEdited: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
+      lastEdited: new Date().toISOString(),
       status: statuses[Math.floor(Math.random() * statuses.length)]
     }))
   );
 };
 
-const createMockVersions = (documents: Document[]) => {
+const fetchVersions = async (documents: Document[]): Promise<Version[]> => {
   const statuses: DocumentStatus[] = ['new', 'in-progress', 'review', 'complete', 'ai-process'];
-  
-  return documents.flatMap(doc => 
+
+  return documents.flatMap(doc =>
     Array(doc.versionsCount).fill(0).map((_, i) => ({
       id: `version-${doc.id}-${i}`,
       documentId: doc.id,
       versionNumber: i + 1,
       status: statuses[Math.floor(Math.random() * statuses.length)],
-      createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
-      updatedAt: new Date(Date.now() - Math.random() * 1000000000).toISOString()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }))
   );
 };
 
-const createMockPages = (versions: Version[]) => {
-  return versions.flatMap(version => 
-    Array(Math.floor(Math.random() * 5) + 1).fill(0).map((_, i) => ({
+const fetchPages = async (versions: Version[]): Promise<Page[]> => {
+  return versions.flatMap(version =>
+    Array(3).fill(0).map((_, i) => ({
       id: `page-${version.id}-${i}`,
       versionId: version.id,
       pageNumber: i + 1,
       imageUrl: '/placeholder.svg',
       json: { fields: [{ name: `field${i+1}`, type: 'text', label: `Field ${i+1}` }] },
-      validationRules: Array(Math.floor(Math.random() * 3) + 1).fill(0).map((_, j) => ({
+      validationRules: Array(2).fill(0).map((_, j) => ({
         id: `rule-${version.id}-${i}-${j}`,
         pageId: `page-${version.id}-${i}`,
         description: `Validate Field ${i+1}`,
@@ -156,23 +165,26 @@ export const useStore = create<AppState>()(
       setIsLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
 
-      loadMockData: () => {
-        const mockDocs = createMockDocuments();
-        const mockVersions = createMockVersions(mockDocs);
-        const mockPages = createMockPages(mockVersions);
+      loadMockData: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const user = await fetchUser();
+          const states = await fetchStates();
+          const documents = await fetchDocuments();
+          const versions = await fetchVersions(documents);
+          const pages = await fetchPages(versions);
 
-        set({
-          user: {
-            email: 'user@example.com',
-            role: 'cca',
-            states: mockStates,
-            name: 'John Doe'
-          },
-          states: mockStates,
-          documents: mockDocs,
-          versions: mockVersions,
-          pages: mockPages
-        });
+          set({
+            user,
+            states,
+            documents,
+            versions,
+            pages,
+            isLoading: false
+          });
+        } catch (error) {
+          set({ error: (error as Error).message, isLoading: false });
+        }
       }
     }),
     {

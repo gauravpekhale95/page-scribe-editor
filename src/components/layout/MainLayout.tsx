@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
+import { set } from 'date-fns';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -20,8 +21,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const { user, currentState, currentDocument, currentVersion, setUser } = useStore();
   
   const handleLogout = () => {
-    setUser(null);
-    navigate('/login');
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.reload()
+    // setUser(null);
+     
   };
 
   const breadcrumbs = [
